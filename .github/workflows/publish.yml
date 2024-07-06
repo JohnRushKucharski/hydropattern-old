@@ -72,7 +72,7 @@ jobs:
 
       environment:
         name: pypi
-        url: https://pypi.org/p/netherland
+        url: https://pypi.org/p/hyropattern
       
       permissions:
           id-token: write
