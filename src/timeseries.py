@@ -59,8 +59,12 @@ class Timeseries:
     def __post_init__(self):
         self.data = self.data.sort_index()
         self.validate_dataframe(self.data)
-        self.dsowy = self.data.index.map(
+        self.data['dowy'] = self.data.index.map(
             lambda x: to_day_of_water_year(x, self.first_day_of_water_year))
+        # self.dsowy = pd.Series(
+        #     data = self.data.index.map(
+        #     lambda x: to_day_of_water_year(x, self.first_day_of_water_year)),
+        #     index = self.data.index)
         #todo: validate file path exists and first day of water year [0,365]
 
     @staticmethod
@@ -94,7 +98,7 @@ class Timeseries:
                           first_day_of_water_year=first_dowy)
 
     @staticmethod
-    def from_csv(path: str, first_dowy: int = 1,  **kwargs) -> 'Timeseries':
+    def from_csv(path: str, first_dowy: int = 1,  date_format: str = '') -> 'Timeseries':
         '''
         Returns a Timeseries object, with file_path.
         
@@ -103,8 +107,13 @@ class Timeseries:
             - columns: ['time', ...]
             - parse_dates = True will successfully parse 'time' column.
         '''
-        df = pd.read_csv(path, header=0, parse_dates=[0], index_col=0,
-                         **kwargs).rename_axis('time', axis=0).sort_index()
+        if date_format:
+            df = pd.read_csv(path, header=0, index_col=0, parse_dates=[0],
+                             date_format=date_format,
+                             ).rename_axis('time', axis=0).sort_index()
+        else:
+            df = pd.read_csv(path, header=0, index_col=0, parse_dates=[0],
+                             ).rename_axis('time', axis=0).sort_index()
         return Timeseries(file_path=path, data=df.apply(pd.to_numeric, errors='raise'),
                           first_day_of_water_year=first_dowy)
 
@@ -353,3 +362,5 @@ class Timeseries:
             output_path = self.file_path.replace('.csv', '.png')
             plt.savefig(output_path)
         plt.show()
+
+#todo: quantile hydrograph support (port from functional flows)

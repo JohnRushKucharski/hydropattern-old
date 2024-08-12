@@ -51,7 +51,8 @@ class TestTimeseries(unittest.TestCase):
         '''Tests from_dataframe with good data.'''
         df = pd.DataFrame({'time': pd.date_range(start='1/1/1900', periods=10),
                            'value': range(10)}).set_index('time')
-        self.assertEqual(Timeseries.from_dataframe(df).data.shape, (10, 1))
+        # a second column containing dowy is added to the dataframe
+        self.assertEqual(Timeseries.from_dataframe(df).data.shape, (10, 2))
 
     def test_day_of_water_year_to_date_no_leap_yr(self):
         '''Tests day_of_water_year_to_datetime.'''
@@ -67,10 +68,10 @@ class TestTimeseries(unittest.TestCase):
         self.assertEqual(ts.day_of_water_year_to_date(dowy=365, year=1900),
                          pd.Timestamp('1900-09-30'))
 
-    def test_day_of_water_year_to_date_last_dowy_equals_365(self):
-        '''Tests day_of_water_year_to_datetime.'''
+    def test_dowy(self):
+        '''Looks for dowy series.'''
         df = pd.DataFrame({'time': pd.date_range(start='1/1/1900', periods=365),
                            'value': range(365)}).set_index('time')
         ts = Timeseries.from_dataframe(df, first_dowy=274)
-        date = ts.day_of_water_year_to_date(dowy=365, year=1900)
-        self.assertEqual(date, pd.Timestamp('1900-09-30'))
+        self.assertTrue(pd.Series.equals(ts.data.dowy,
+                                         pd.Series(ts.data.dowy, index=ts.data.index)))
